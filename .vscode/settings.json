@@ -5,5 +5,6 @@
     "douyin",
     "jsonify",
     "qrcode"
-  ]
+  ],
+  "python.analysis.typeCheckingMode": "off"
 }

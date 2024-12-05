@@ -1,11 +1,15 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+
 class Platforms(BaseModel):
     """下面就是每个平台，平台下传递包含id的数组"""
     """bilibili的id"""
     bilibili: Optional[List[str]] = []
     xiaohongshu: Optional[List[str]] = []
+    tencent: Optional[List[str]] = []
+    douyin: Optional[List[str]] = []
+    kuaishou: Optional[List[str]] = []
 
     # def __init__(self, bilibili: Optional[List[str]]) -> None:
     #     self.bilibili = bilibili
@@ -29,6 +33,8 @@ class UploadVideoByUrlRequest(BaseModel):
     video_url: str
     """视频文件名"""
     video_file_name: str
+    """视频号视频类型"""
+    category: Optional[str]
 
     # def __init__(self, description: str, platform: Platform, tags: List[str], tid: str, timestamps: Optional[str], title: str, video_file_name: str, video_url: str) -> None:
     #     self.description = description
