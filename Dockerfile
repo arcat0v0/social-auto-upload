@@ -16,6 +16,8 @@ COPY . /app
 # 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN playwright install chromium firefox
+
 # 暴露应用程序运行的端口
 EXPOSE 8000
 

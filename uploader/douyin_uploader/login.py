@@ -54,7 +54,7 @@ async def douyin_login(background_tasks: BackgroundTasks, browser: Browser):
                     if await verify_card.is_visible():
                         print("需要二次验证")
                         login_info = {
-                            'login_status': 'send_sms_verify_code'
+                            'login_status': 'send_sms_verify_code',
                         }
                         register_douyin_login(
                             generated_login_uuid_str, json.dumps(login_info))
@@ -122,7 +122,9 @@ async def douyin_login(background_tasks: BackgroundTasks, browser: Browser):
 def douyin_login_verify_sms_code(account_id: str, code: str):
     try:
         login_info = get_douyin_login(account_id)
-        login_info.update({'sms_verify_code': code})
+        login_info['sms_verify_code'] = code
+
+        print(login_info)
         register_douyin_login(account_id, json.dumps(login_info))
     except Exception as e:
         raise {"message": e}

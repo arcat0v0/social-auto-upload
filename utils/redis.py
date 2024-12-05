@@ -12,6 +12,23 @@ def safe_loads(json_str):
     except json.JSONDecodeError:
         return {}  # 如果解析失败，也返回空字典
 
+# common
+
+
+def add_to_login_list(id: str, value: str):
+    # 将用户ID添加到登录列表中
+    r.hset('login_list', id, value)
+
+
+def remove_from_login_list(id: str):
+    # 从登录列表中移除用户ID
+    r.hdel('login_list', id)
+
+
+def get_from_login_list(id: str):
+    r.hget('login_list', id)
+
+
 # bilibili
 
 
@@ -20,7 +37,7 @@ def add_to_bilibili_login_list(id):
 
 
 def register_bilibili_login(id: str, value: str):
-    r.set(id, value)
+    add_to_login_list(id, value)
 
 
 def remove_from_bilibili_login_list(id):
@@ -28,11 +45,11 @@ def remove_from_bilibili_login_list(id):
 
 
 def get_bilibili_login(id) -> dict:
-    return json.loads(r.get(id))
+    return json.loads(get_from_login_list(id))
 
 
 def remove_bilibili_login(id):
-    r.delete(id)
+    remove_from_login_list(id)
 
 
 def get_all_bilibili_login_ids():
@@ -40,7 +57,7 @@ def get_all_bilibili_login_ids():
 
 
 def clear_bilibili_login_list():
-    r.delete('bilibili_login')
+    remove_from_login_list('bilibili_login')
 
 
 # xiaohongshu
@@ -49,7 +66,7 @@ def add_to_xiaohongshu_login_list(id):
 
 
 def register_xiaohongshu_login(id: str, value: str):
-    r.set(id, value)
+    add_to_login_list(id, value)
 
 
 def remove_from_xiaohongshu_login_list(id):
@@ -57,11 +74,11 @@ def remove_from_xiaohongshu_login_list(id):
 
 
 def get_xiaohongshu_login(id) -> dict:
-    return json.loads(r.get(id))
+    return json.loads(get_from_login_list(id))
 
 
 def remove_xiaohongshu_login(id):
-    r.delete(id)
+    remove_from_login_list(id)
 
 
 def get_all_xiaohongshu_login_ids():
@@ -69,7 +86,7 @@ def get_all_xiaohongshu_login_ids():
 
 
 def clear_xiaohongshu_login_list():
-    r.delete('xiaohongshu_login')
+    remove_from_login_list('xiaohongshu_login')
 
 # tencent
 
@@ -79,7 +96,7 @@ def add_to_tencent_login_list(id: str):
 
 
 def register_tencent_login(id: str, value: str):
-    r.set(id, value)
+    add_to_login_list(id, value)
 
 
 def remove_from_tencent_login_list(id: str):
@@ -87,11 +104,11 @@ def remove_from_tencent_login_list(id: str):
 
 
 def get_tencent_login(id: str) -> dict:
-    return json.loads(r.get(id))
+    return json.loads(get_from_login_list(id))
 
 
 def remove_tencent_login(id: str):
-    r.delete(id)
+    remove_from_login_list(id)
 
 
 def get_all_tencent_login_ids():
@@ -99,7 +116,7 @@ def get_all_tencent_login_ids():
 
 
 def clear_tencent_login_list():
-    r.delete('tencent_login')
+    remove_from_login_list('tencent_login')
 
 
 # douyin
@@ -108,7 +125,7 @@ def add_to_douyin_login_list(id: str):
 
 
 def register_douyin_login(id: str, value: str):
-    r.set(id, value)
+    add_to_login_list(id, value)
 
 
 def remove_from_douyin_login_list(id: str):
@@ -116,11 +133,11 @@ def remove_from_douyin_login_list(id: str):
 
 
 def get_douyin_login(id: str) -> dict:
-    return safe_loads(r.get(id))
+    return safe_loads(get_from_login_list(id))
 
 
 def remove_douyin_login(id: str):
-    r.delete(id)
+    remove_from_login_list(id)
 
 
 def get_all_douyin_login_ids():
@@ -128,7 +145,7 @@ def get_all_douyin_login_ids():
 
 
 def clear_douyin_login_list():
-    r.delete('douyin_login')
+    remove_from_login_list('douyin_login')
 
 # kuaishou
 
@@ -138,7 +155,7 @@ def add_to_ks_login_list(id: str):
 
 
 def register_ks_login(id: str, value: str):
-    r.set(id, value)
+    add_to_login_list(id, value)
 
 
 def remove_from_ks_login_list(id: str):
@@ -146,11 +163,11 @@ def remove_from_ks_login_list(id: str):
 
 
 def get_ks_login(id: str) -> dict:
-    return safe_loads(r.get(id))
+    return safe_loads(get_from_login_list(id))
 
 
 def remove_ks_login(id: str):
-    r.delete(id)
+    remove_from_login_list(id)
 
 
 def get_all_ks_login_ids():
@@ -158,4 +175,4 @@ def get_all_ks_login_ids():
 
 
 def clear_ks_login_list():
-    r.delete('ks_login')
+    remove_from_login_list('ks_login')

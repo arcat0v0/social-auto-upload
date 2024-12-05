@@ -88,12 +88,12 @@ class KSVideo(object):
         print(self.local_executable_path)
         if self.local_executable_path:
             browser = await playwright.chromium.launch(
-                headless=False,
+                headless=True,
                 executable_path=self.local_executable_path,
             )
         else:
             browser = await playwright.chromium.launch(
-                headless=False
+                headless=True
             )  # 创建一个浏览器上下文，使用指定的 cookie 文件
         context = await browser.new_context(storage_state=self.account_file)
         context = await set_init_script(context)
