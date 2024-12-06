@@ -83,9 +83,6 @@ async def douyin_login(background_tasks: BackgroundTasks, browser: Browser):
                         pattern = r'\d+'
                         account_id = re.search(
                             pattern, account_id_text).group()
-
-                        print(f"Account ID: {account_id}  Login Status: {
-                            login_status}  SMS Verify Code: {sms_verify_code}  Iteration: {i}")  # 打印调试信息
                         if account_id is not None:
                             cookies = await context.storage_state()  # 获取登录后的cookie
                             converted_state = convert_storage_state(cookies)
