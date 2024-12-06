@@ -11,9 +11,9 @@ from utils.redis import add_to_tencent_login_list, register_tencent_login
 
 
 def convert_storage_state(storage_state):
-    for cookie in storage_state.get('cookies', []):
-        if 'expires' in cookie:
-            cookie['expires'] = int(cookie['expires'])
+    for cookie in storage_state.get("cookies", []):
+        if "expires" in cookie:
+            cookie["expires"] = int(cookie["expires"])
     return storage_state
 
 
@@ -22,7 +22,7 @@ async def tencent_login(background_tasks: BackgroundTasks, browser: Browser):
     generated_login_uuid_str = str(generated_login_uuid)
     async with async_playwright() as playwright:
         context = await browser.new_context(
-            viewport={'width': 1280, 'height': 720}  # 设置视口宽度和高度
+            viewport={"width": 1280, "height": 720}  # 设置视口宽度和高度
         )
         context = await set_init_script(context)
         page = await context.new_page()
@@ -31,7 +31,7 @@ async def tencent_login(background_tasks: BackgroundTasks, browser: Browser):
 
         # 获取登录二维码
         await page.screenshot(path="example.png")
-        qrcode_img = page.locator('iframe').content_frame.locator('img.qrcode')
+        qrcode_img = page.locator("iframe").content_frame.locator("img.qrcode")
         src = await qrcode_img.get_attribute("src")
 
         async def tencent_login_callback():
@@ -45,14 +45,16 @@ async def tencent_login(background_tasks: BackgroundTasks, browser: Browser):
                         cookies = await context.storage_state()  # 获取登录后的cookie
                         converted_state = convert_storage_state(cookies)
                         cookies_json = json.dumps(
-                            converted_state)  # 将cookie转换为json格式
+                            converted_state
+                        )  # 将cookie转换为json格式
 
                         login_info = {
-                            'tencent_id': account_id,
-                            'client_cookie': cookies_json
+                            "tencent_id": account_id,
+                            "client_cookie": cookies_json,
                         }
                         register_tencent_login(
-                            generated_login_uuid_str, json.dumps(login_info))
+                            generated_login_uuid_str, json.dumps(login_info)
+                        )
                         add_to_tencent_login_list(generated_login_uuid_str)
                         break
                     if i == 180:

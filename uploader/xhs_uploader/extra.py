@@ -7,12 +7,15 @@ from uploader.xhs_uploader.main import beauty_print, sign_local
 from utils.redis import get_all_xiaohongshu_login_ids, get_xiaohongshu_login
 
 
-def upload_video_to_xiaohongshu(id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]):
+def upload_video_to_xiaohongshu(
+    id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]
+):
     login_info = get_xiaohongshu_login(id)
-    cookies_json = login_info['client_cookie']
+    cookies_json = login_info["client_cookie"]
     cookies = json.loads(cookies_json)
     cookies_string = ";".join(
-        [f"{cookie['name']}={cookie['value']}" for cookie in cookies])
+        [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
+    )
 
     xhs_client = XhsClient(cookies_string, sign=sign_local, timeout=60)
     # auth cookie
@@ -23,21 +26,21 @@ def upload_video_to_xiaohongshu(id: str, video_path: str, title: str, tags: List
         print(e)
         raise Exception("cookie 失效")
 
-    tags_str = ' '.join(['#' + tag for tag in tags])
-    hash_tags_str = ''
+    tags_str = " ".join(["#" + tag for tag in tags])
+    hash_tags_str = ""
     hash_tags = []
     topics = []
     # 获取hashtag
     for i in tags[:3]:
         topic_official = xhs_client.get_suggest_topic(i)
         if topic_official:
-            topic_official[0]['type'] = 'topic'
+            topic_official[0]["type"] = "topic"
             topic_one = topic_official[0]
-            hash_tag_name = topic_one['name']
+            hash_tag_name = topic_one["name"]
             hash_tags.append(hash_tag_name)
             topics.append(topic_one)
 
-    hash_tags_str = ' ' + ' '.join(['#' + tag + '[话题]#' for tag in hash_tags])
+    hash_tags_str = " " + " ".join(["#" + tag + "[话题]#" for tag in hash_tags])
 
     # 模拟四小时后的时间戳
     # 获取当前的时间
@@ -49,14 +52,20 @@ def upload_video_to_xiaohongshu(id: str, video_path: str, title: str, tags: List
     # 计算四小时之后的时间
     future_time = now + four_hours
 
-    upload_timestamp = datetime.fromtimestamp(float(
-        timestamp)) if timestamp is not None else future_time
+    upload_timestamp = (
+        datetime.fromtimestamp(float(timestamp))
+        if timestamp is not None
+        else future_time
+    )
 
-    note = xhs_client.create_video_note(title=title[:20], video_path=video_path,
-                                        desc=title + tags_str + hash_tags_str,
-                                        topics=topics,
-                                        is_private=False,
-                                        post_time=upload_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
+    note = xhs_client.create_video_note(
+        title=title[:20],
+        video_path=video_path,
+        desc=title + tags_str + hash_tags_str,
+        topics=topics,
+        is_private=False,
+        post_time=upload_timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+    )
 
     beauty_print(note)
 

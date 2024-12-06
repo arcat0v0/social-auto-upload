@@ -26,7 +26,9 @@ async def cookie_auth(account_file):
         await page.goto("https://cp.kuaishou.com/article/publish/video")
         try:
             # 等待5秒
-            await page.wait_for_selector("div.names div.container div.name:text('机构服务')", timeout=5000)
+            await page.wait_for_selector(
+                "div.names div.container div.name:text('机构服务')", timeout=5000
+            )
 
             kuaishou_logger.info("[+] 等待5秒 cookie 失效")
             return False
@@ -41,7 +43,8 @@ async def ks_setup(account_file, handle=False):
         if not handle:
             return False
         kuaishou_logger.info(
-            '[+] cookie文件不存在或已失效，即将自动打开浏览器，请扫码登录，登陆后会自动生成cookie文件')
+            "[+] cookie文件不存在或已失效，即将自动打开浏览器，请扫码登录，登陆后会自动生成cookie文件"
+        )
         await get_ks_cookie(account_file)
     return True
 
@@ -49,10 +52,8 @@ async def ks_setup(account_file, handle=False):
 async def get_ks_cookie(account_file):
     async with async_playwright() as playwright:
         options = {
-            'args': [
-                '--lang en-GB'
-            ],
-            'headless': False,  # Set headless option here
+            "args": ["--lang en-GB"],
+            "headless": False,  # Set headless option here
         }
         # Make sure to run headed.
         browser = await playwright.chromium.launch(**options)
@@ -68,19 +69,23 @@ async def get_ks_cookie(account_file):
 
 
 class KSVideo(object):
-    def __init__(self, title, file_path, tags, publish_date: datetime, account_file, account_id):
+    def __init__(
+        self, title, file_path, tags, publish_date: datetime, account_file, account_id
+    ):
         self.title = title  # 视频标题
         self.file_path = file_path
         self.tags = tags
         self.publish_date = publish_date
         self.account_file = account_file
         self.account_id = account_id
-        self.date_format = '%Y-%m-%d %H:%M'
+        self.date_format = "%Y-%m-%d %H:%M"
         self.local_executable_path = LOCAL_CHROME_PATH
 
     async def handle_upload_error(self, page):
         kuaishou_logger.error("视频出错了，重新上传中")
-        await page.locator('div.progress-div [class^="upload-btn-input"]').set_input_files(self.file_path)
+        await page.locator(
+            'div.progress-div [class^="upload-btn-input"]'
+        ).set_input_files(self.file_path)
 
     async def upload(self, playwright: Playwright) -> None:
         login_info = get_ks_login(self.account_id)
@@ -102,13 +107,13 @@ class KSVideo(object):
         page = await context.new_page()
         # 访问指定的 URL
         await page.goto("https://cp.kuaishou.com/article/publish/video")
-        kuaishou_logger.info('正在上传-------{}.mp4'.format(self.title))
+        kuaishou_logger.info("正在上传-------{}.mp4".format(self.title))
         # 等待页面跳转到指定的 URL，没进入，则自动等待到超时
-        kuaishou_logger.info('正在打开主页...')
+        kuaishou_logger.info("正在打开主页...")
         await page.wait_for_url("https://cp.kuaishou.com/article/publish/video")
         # 点击 "上传视频" 按钮
         upload_button = page.locator("button[class^='_upload-btn']")
-        await upload_button.wait_for(state='visible')  # 确保按钮可见
+        await upload_button.wait_for(state="visible")  # 确保按钮可见
 
         async with page.expect_file_chooser() as fc_info:
             await upload_button.click()
@@ -123,8 +128,7 @@ class KSVideo(object):
         await asyncio.sleep(1)
 
         # 等待按钮可交互
-        new_feature_button = page.locator(
-            'button[type="button"] span:text("我知道了")')
+        new_feature_button = page.locator('button[type="button"] span:text("我知道了")')
         if await new_feature_button.count() > 0:
             await new_feature_button.click()
 
@@ -197,11 +201,10 @@ class KSVideo(object):
 
         cookies = await context.storage_state()
         converted_state = convert_storage_state(cookies)
-        cookies_json = json.dumps(
-            converted_state)  # 将cookie转换为json格式
+        cookies_json = json.dumps(converted_state)  # 将cookie转换为json格式
         login_info.update({"client_cookie": json.dumps(cookies_json)})
         register_ks_login(self.account_id, json.dumps(login_info))
-        kuaishou_logger.info('cookie更新完毕！')
+        kuaishou_logger.info("cookie更新完毕！")
         await asyncio.sleep(2)  # 这里延迟是为了方便眼睛直观的观看
         # 关闭浏览器上下文和浏览器实例
         await context.close()
@@ -214,11 +217,14 @@ class KSVideo(object):
     async def set_schedule_time(self, page, publish_date):
         kuaishou_logger.info("click schedule")
         publish_date_hour = publish_date.strftime("%Y-%m-%d %H:%M:%S")
-        await page.locator("label:text('发布时间')").locator('xpath=following-sibling::div').locator(
-            '.ant-radio-input').nth(1).click()
+        await page.locator("label:text('发布时间')").locator(
+            "xpath=following-sibling::div"
+        ).locator(".ant-radio-input").nth(1).click()
         await asyncio.sleep(1)
 
-        await page.locator('div.ant-picker-input input[placeholder="选择日期时间"]').click()
+        await page.locator(
+            'div.ant-picker-input input[placeholder="选择日期时间"]'
+        ).click()
         await asyncio.sleep(1)
 
         await page.keyboard.press("Control+KeyA")
@@ -227,9 +233,11 @@ class KSVideo(object):
         await asyncio.sleep(1)
 
 
-def upload_video_to_ks(id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]):
+def upload_video_to_ks(
+    id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]
+):
     login_info = get_ks_login(id)
-    cookies_json = login_info['client_cookie']
+    cookies_json = login_info["client_cookie"]
     cookies = json.loads(cookies_json)
     cookie_setup = asyncio.run(cookie_auth(cookies))
 
@@ -242,11 +250,15 @@ def upload_video_to_ks(id: str, video_path: str, title: str, tags: List[str], ti
     # 计算四小时之后的时间
     future_time = now + four_hours
 
-    upload_timestamp = datetime.fromtimestamp(float(
-        timestamp)) if timestamp is not None else future_time
+    upload_timestamp = (
+        datetime.fromtimestamp(float(timestamp))
+        if timestamp is not None
+        else future_time
+    )
 
-    app = KSVideo(title, video_path,
-                  tags, upload_timestamp, account_file=cookies, account_id=id)
+    app = KSVideo(
+        title, video_path, tags, upload_timestamp, account_file=cookies, account_id=id
+    )
     asyncio.run(app.main(), debug=False)
 
 
