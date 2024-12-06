@@ -19,6 +19,7 @@ RUN python -m venv .venv
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install fastapi uvicorn python-multipart
 
+RUN playwright install-deps
 RUN playwright install chromium firefox
 
 # 暴露应用程序运行的端口
