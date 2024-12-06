@@ -17,7 +17,7 @@ COPY . /app
 # 安装Python依赖
 RUN python -m venv .venv
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install fastapi uvicorn
+RUN pip install fastapi uvicorn python-multipart
 
 RUN playwright install chromium firefox
 
