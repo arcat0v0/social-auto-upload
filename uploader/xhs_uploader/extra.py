@@ -49,11 +49,14 @@ def upload_video_to_xiaohongshu(id: str, video_path: str, title: str, tags: List
     # 计算四小时之后的时间
     future_time = now + four_hours
 
-    note = xhs_client.create_video_note(title=title[:20], video_path=r"C:\Users\arcat\Develop\social-auto-upload\videos\demo.mp4",
+    upload_timestamp = datetime.fromtimestamp(float(
+        timestamp)) if timestamp is not None else future_time
+
+    note = xhs_client.create_video_note(title=title[:20], video_path=video_path,
                                         desc=title + tags_str + hash_tags_str,
                                         topics=topics,
                                         is_private=False,
-                                        post_time=future_time.strftime("%Y-%m-%d %H:%M:%S"))
+                                        post_time=upload_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
 
     beauty_print(note)
 

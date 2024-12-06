@@ -69,7 +69,7 @@ def run_upload_task(task_id: str, description: str, platforms: Platforms, tags: 
                     for id in dict_platforms[platform]:
                         try:
                             upload_video_to_douyin(
-                                id=id, video_path=download_file_path, title=title, tags=tags, timestamp=timestamp, category=category)
+                                id=id, video_path=download_file_path, title=title, tags=tags, timestamp=timestamp)
                             upload_task_dict['douyin'][id] = {
                                 'status': 'success'}
                         except Exception as e:
@@ -81,7 +81,7 @@ def run_upload_task(task_id: str, description: str, platforms: Platforms, tags: 
                     for id in dict_platforms[platform]:
                         try:
                             upload_video_to_ks(
-                                id=id, video_path=download_file_path, title=title, tags=tags, timestamp=timestamp, category=category)
+                                id=id, video_path=download_file_path, title=title, tags=tags, timestamp=timestamp)
                             upload_task_dict['kuaishou'][id] = {
                                 'status': 'success'}
                         except Exception as e:

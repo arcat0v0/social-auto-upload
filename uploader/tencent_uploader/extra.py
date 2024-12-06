@@ -267,8 +267,8 @@ def upload_video_to_tencent(id: str, video_path: str, title: str, tags: List[str
     # 计算四小时之后的时间
     future_time = now + four_hours
     print('test')
-    app = TencentVideo(title, r"C:\Users\arcat\Develop\social-auto-upload\videos\demo.mp4",
-                       tags, future_time.timestamp(), cookies, category)
+    app = TencentVideo(title, video_path,
+                       tags, float(timestamp) if timestamp is not None else future_time.timestamp(), cookies, category)
     asyncio.run(app.main(), debug=False)
 
 

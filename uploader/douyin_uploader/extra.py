@@ -256,7 +256,7 @@ class DouYinVideo(object):
             await self.upload(playwright)
 
 
-def upload_video_to_douyin(id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str], category):
+def upload_video_to_douyin(id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]):
     login_info = get_douyin_login(id)
     cookies_json = login_info['client_cookie']
     cookies = json.loads(cookies_json)
@@ -268,10 +268,13 @@ def upload_video_to_douyin(id: str, video_path: str, title: str, tags: List[str]
     # 创建一个表示四小时的时间增量
     four_hours = timedelta(hours=4)
 
+    upload_timestamp = datetime.fromtimestamp(float(
+        timestamp)) if timestamp is not None else future_time
+
     # 计算四小时之后的时间
     future_time = now + four_hours
-    app = DouYinVideo(title, r"C:\Users\arcat\Develop\social-auto-upload\videos\demo.mp4",
-                      tags, future_time, account_file=cookies, account_id=id)
+    app = DouYinVideo(title, video_path,
+                      tags, upload_timestamp, account_file=cookies, account_id=id)
     asyncio.run(app.main(), debug=False)
 
 
