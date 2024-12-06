@@ -22,6 +22,8 @@ from uploader.xhs_uploader.extra import get_xiaohongshu_login_account_ids
 from uploader.xhs_uploader.login import xhs_login_client, xhs_login_creator
 from playwright.async_api import async_playwright, Browser
 
+from utils.redis import change_redis_config, test_redis_connecting
+
 
 browser_instances = {
     "firefox": Browser,
@@ -169,6 +171,28 @@ async def ks_get_login_account():
     ids = get_ks_login_account_ids()
     response = {"code": 0, "data": ids}
     return response
+
+
+@app.post("/change_redis_config")
+async def change_redis_config_route(host: str = Form(...), port: int = Form(...)):
+    try:
+        change_redis_config(host, port)
+        response = {"code": 0, "message": "success"}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
+
+
+@app.post("/test_redis_connecting")
+async def test_redis_connecting_route():
+    try:
+        res = test_redis_connecting()
+        response = {"code": 0, "message": res}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
 
 
 @app.post("/upload_video_by_url")

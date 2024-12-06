@@ -1,7 +1,9 @@
 import json
 import redis
 
-r = redis.Redis(host="172.27.152.174", port=6379, decode_responses=True)
+redis_config = {"host": "172.27.152.174", "port": 6379, "decode_responses": True}
+
+r = redis.StrictRedis(**redis_config)
 
 
 def safe_loads(json_str):
@@ -14,8 +16,6 @@ def safe_loads(json_str):
 
 
 # common
-
-
 def add_to_login_list(id: str, value: str):
     # 将用户ID添加到登录列表中
     r.hset("login_list", id, value)
@@ -40,6 +40,19 @@ def get_task_result(task_id: str):
 
 def remove_task_result(task_id: str):
     r.hdel("task_results", task_id)
+
+
+def test_redis_connecting():
+    try:
+        r.ping()
+        return "Successfully connected to redis"
+    except (redis.exceptions.ConnectionError, ConnectionRefusedError) as e:
+        return f"Failed to connect to redis: {e}"
+
+
+def change_redis_config(host: str, port: int):
+    global r
+    r = redis.StrictRedis(host=host, port=port, decode_responses=True)
 
 
 # bilibili
