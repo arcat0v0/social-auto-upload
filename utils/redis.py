@@ -29,6 +29,18 @@ def get_from_login_list(id: str):
     r.hget('login_list', id)
 
 
+def record_task_result(task_id: str, result: str):
+    r.hset('task_results', task_id, result)
+
+
+def get_task_result(task_id: str):
+    return r.hget('task_results', task_id)
+
+
+def remove_task_result(task_id: str):
+    r.hdel('task_results', task_id)
+
+
 # bilibili
 
 

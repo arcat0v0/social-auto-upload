@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import uuid
 from fastapi import BackgroundTasks, FastAPI, Form
 from type.upload_video_by_url_request import UploadVideoByUrlRequest
 from uploader.bilibili_uploader.extra import get_bilibili_login_account_ids, get_bilibili_login_info, request_login_url
@@ -149,6 +150,8 @@ async def douyin_get_login_status(account_id: str = Form(...)):
 @app.post("/douyin/verify_sms_code")
 async def douyin_verify_sms_code(account_id: str = Form(...), code: str = Form(...)):
     try:
+        if not account_id or not code:
+            raise "account_id and code are required"
         res = douyin_login_verify_sms_code(account_id, code)
         response = {
             "code": 0,
@@ -157,7 +160,7 @@ async def douyin_verify_sms_code(account_id: str = Form(...), code: str = Form(.
     except Exception as e:
         response = {
             "code": 1,
-            "data": e
+            "message": str(e)
         }
     finally:
         return response
@@ -191,9 +194,13 @@ async def ks_get_login_account():
 @app.post("/upload_video_by_url")
 async def upload_video_by_url(upload_video_by_url_request: UploadVideoByUrlRequest, background_tasks: BackgroundTasks):
     request = upload_video_by_url_request
-    background_tasks.add_task(run_upload_task, video_url=request.video_url, video_file_name=request.video_file_name, title=request.title,
+    upload_task_id = uuid.uuid4()
+    upload_task_id_str = str(upload_task_id)
+    background_tasks.add_task(run_upload_task, task_id=upload_task_id_str, video_url=request.video_url, video_file_name=request.video_file_name, title=request.title,
                               description=request.description, tags=request.tags, tid=request.tid, timestamp=request.timestamp, platforms=request.platforms)
-    return {"message": "Video upload task ran"}
+    return {"message": "Video upload task ran", "code": 0, "data": {
+        "task_id": upload_task_id_str
+    }}
 
 
 @app.get("/screenshot")
