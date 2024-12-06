@@ -32,8 +32,8 @@ browser_instances = {
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     playwright = await async_playwright().start()
-    browser_instances["firefox"] = await playwright.firefox.launch(headless=False)
-    browser_instances["chromium"] = await playwright.chromium.launch(headless=False)
+    browser_instances["firefox"] = await playwright.firefox.launch(headless=True)
+    browser_instances["chromium"] = await playwright.chromium.launch(headless=True)
 
     yield
     await browser_instances["firefox"].close()
