@@ -7,6 +7,9 @@
 3. 运行代码 `sudo docker run --restart unless-stopped -d -p 8000:8000 crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
 4. docker logs `<container_name>` (container_name 可以用docker ps -a查看) 该命令查看docker运行情况
 
+该docker会监听8000端口，接口文档详见apifox
+
+
 以下是原项目readme
 
 ---
