@@ -22,7 +22,7 @@ from uploader.xhs_uploader.extra import get_xiaohongshu_login_account_ids
 from uploader.xhs_uploader.login import xhs_login_client, xhs_login_creator
 from playwright.async_api import async_playwright, Browser
 
-from utils.redis import change_redis_config, test_redis_connecting
+from utils.redis import change_redis_config, get_task_result, test_redis_connecting
 
 
 browser_instances = {
@@ -224,6 +224,13 @@ async def upload_video_by_url(
         "code": 0,
         "data": {"task_id": upload_task_id_str},
     }
+
+
+@app.get("/get_upload_task_status")
+async def get_upload_task_status(task_id: str = Form(...)):
+    status = get_task_result(task_id)
+    response = {"code": 0, "data": status}
+    return response
 
 
 @app.get("/screenshot")
