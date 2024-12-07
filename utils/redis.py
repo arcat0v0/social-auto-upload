@@ -27,7 +27,7 @@ def remove_from_login_list(id: str):
 
 
 def get_from_login_list(id: str):
-    r.hget("login_list", id)
+    return r.hget("login_list", id)
 
 
 def record_task_result(task_id: str, result: str):
@@ -76,6 +76,7 @@ def remove_from_bilibili_login_list(id):
 
 
 def get_bilibili_login(id) -> dict:
+    print(get_from_login_list(id))
     return json.loads(get_from_login_list(id))
 
 
