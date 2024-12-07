@@ -174,7 +174,12 @@ async def ks_get_login_account():
 
 
 @app.post("/change_redis_config")
-async def change_redis_config_route(host: str = Form(...), port: int = Form(...)):
+async def change_redis_config_route(
+    host: str = Form(...),
+    port: int = Form(...),
+    username: str = Form(None),
+    password: str = Form(None),
+):
     try:
         change_redis_config(host, port)
         response = {"code": 0, "message": "success"}

@@ -5,7 +5,15 @@
 1. 登录 `sudo docker login --username=vip@wqdian.com crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com`
 2. 拉取镜像 `sudo docker pull crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
 3. 运行代码 `sudo docker run --restart unless-stopped -d -p 8000:8000 crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
-4. docker logs `<container_name>` (container_name 可以用docker ps -a查看) 该命令查看docker运行情况
+4. 查看docker运行情况 `sudo docker logs <container_name>` (container_name 可以用sudo docker ps -a查看) 该命令查看docker运行情况
+
+更新方法：
+
+1. 重新拉取镜像 `sudo docker pull crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main` （同样地，需要登录，如果之前登录过就不用了）
+2. 查看运行的docker `sudo docker ps -a`
+3. 停止之前运行的docker `sudo docker stop <container_name>`
+4. 删除之前运行的docker `sudo docker rm <container_name>`
+5. 重新运行docker `sudo docker run --restart unless-stopped -d -p 8000:8000 crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
 
 该docker会监听8000端口，接口文档详见apifox
 
