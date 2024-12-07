@@ -2,9 +2,10 @@
 
 本项目部署方法:
 
-1. pull 镜像
-2. 运行代码 `sudo docker run --restart unless-stopped -d -p 8000:8000 crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
-3. docker logs `<container_name>` (container_name 可以用docker ps -a查看) 该命令查看docker运行情况
+1. 登录 `sudo docker login --username=vip@wqdian.com crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com`
+2. 拉取镜像 `sudo docker pull crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
+3. 运行代码 `sudo docker run --restart unless-stopped -d -p 8000:8000 crpi-bea37vsmfunygase.cn-wulanchabu.personal.cr.aliyuncs.com/zhtc/video:main`
+4. docker logs `<container_name>` (container_name 可以用docker ps -a查看) 该命令查看docker运行情况
 
 以下是原项目readme
 
