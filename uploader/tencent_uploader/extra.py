@@ -140,7 +140,7 @@ class TencentVideo(object):
 
     async def upload(self, playwright: Playwright) -> None:
         # 使用 Chromium (这里使用系统内浏览器，用chromium 会造成h264错误
-        browser = await playwright.firefox.launch(headless=True)
+        browser = await playwright.firefox.launch(headless=False)
         # 创建一个浏览器上下文，使用指定的 cookie 文件
         context = await browser.new_context(storage_state=self.account_file)
         context = await set_init_script(context)
@@ -220,8 +220,10 @@ class TencentVideo(object):
                     await asyncio.sleep(0.5)
 
     async def detect_upload_status(self, page):
-        while True:
+        for i in range(0, 180):
             # 匹配删除按钮，代表视频上传完毕，如果不存在，代表视频正在上传，则等待
+            if i == 179:
+                raise Exception("Upload video timeout")
             try:
                 # 匹配删除按钮，代表视频上传完毕
                 if "weui-desktop-btn_disabled" not in await page.get_by_role(
@@ -336,7 +338,6 @@ def upload_video_to_tencent(
 
     # 计算四小时之后的时间
     future_time = now + four_hours
-    print("test")
     app = TencentVideo(
         title,
         video_path,
@@ -352,13 +353,17 @@ async def get_tencent_login_account_ids():
     ids = get_all_tencent_login_ids()
     filtered_ids = []
     for id in ids:
-        login_info = get_tencent_login(id)
-        cookies_json = login_info["client_cookie"]
-        cookies = json.loads(cookies_json)
-        vail = await cookie_auth(cookies)
-        if vail:
-            filtered_ids.append(id)
-        else:
+        try:
+            login_info = get_tencent_login(id)
+            cookies_json = login_info["client_cookie"]
+            cookies = json.loads(cookies_json)
+            vail = await cookie_auth(cookies)
+            if vail:
+                filtered_ids.append(id)
+            else:
+                remove_tencent_login(id)
+                remove_from_tencent_login_list(id)
+        except Exception as e:
             remove_tencent_login(id)
             remove_from_tencent_login_list(id)
     return filtered_ids
