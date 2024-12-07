@@ -17,6 +17,7 @@ from utils.redis import (
     get_all_douyin_login_ids,
     get_douyin_login,
     register_douyin_login,
+    remove_douyin_login,
     remove_from_douyin_login_list,
 )
 
@@ -326,16 +327,17 @@ def upload_video_to_douyin(
     asyncio.run(app.main(), debug=False)
 
 
-def get_douyin_login_account_ids():
+async def get_douyin_login_account_ids():
     ids = get_all_douyin_login_ids()
     filtered_ids = []
     for id in ids:
         login_info = get_douyin_login(id)
         cookies_json = login_info["client_cookie"]
         cookies = json.loads(cookies_json)
-        vail = cookie_auth(cookies)
+        vail = await cookie_auth(cookies)
         if vail:
             filtered_ids.append(id)
         else:
+            remove_douyin_login(id)
             remove_from_douyin_login_list(id)
     return filtered_ids

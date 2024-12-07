@@ -8,6 +8,7 @@ from utils.redis import (
     get_all_xiaohongshu_login_ids,
     get_xiaohongshu_login,
     remove_from_xiaohongshu_login_list,
+    remove_xiaohongshu_login,
 )
 
 
@@ -93,4 +94,5 @@ def get_xiaohongshu_login_account_ids():
             filtered_ids.append(id)
         except Exception as e:
             remove_from_xiaohongshu_login_list(id)
+            remove_xiaohongshu_login(id)
     return filtered_ids

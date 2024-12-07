@@ -17,6 +17,7 @@ from utils.redis import (
     get_ks_login,
     register_ks_login,
     remove_from_ks_login_list,
+    remove_ks_login,
 )
 
 
@@ -272,16 +273,17 @@ def upload_video_to_ks(
     asyncio.run(app.main(), debug=False)
 
 
-def get_ks_login_account_ids():
+async def get_ks_login_account_ids():
     ids = get_all_ks_login_ids()
     filtered_ids = []
     for id in ids:
         login_info = get_ks_login(id)
         cookies_json = login_info["client_cookie"]
         cookies = json.loads(cookies_json)
-        vail = cookie_auth(cookies)
+        vail = await cookie_auth(cookies)
         if vail:
             filtered_ids.append(id)
         else:
+            remove_ks_login(id)
             remove_from_ks_login_list(id)
     return filtered_ids

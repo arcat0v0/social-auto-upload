@@ -11,6 +11,7 @@ from utils.redis import (
     get_tencent_login,
     register_tencent_login,
     remove_from_tencent_login_list,
+    remove_tencent_login,
 )
 from playwright.async_api import async_playwright, Playwright
 from utils.log import tencent_logger
@@ -44,7 +45,7 @@ def format_str_for_short_title(origin_title: str) -> str:
 
 async def cookie_auth(account_file):
     async with async_playwright() as playwright:
-        browser = await playwright.firefox.launch(headless=True)
+        browser = await playwright.webkit.launch(headless=False)
         context = await browser.new_context(storage_state=account_file)
         context = await set_init_script(context)
         # 创建一个新的页面
@@ -320,7 +321,11 @@ def upload_video_to_tencent(
     login_info = get_tencent_login(id)
     cookies_json = login_info["client_cookie"]
     cookies = json.loads(cookies_json)
+
+    print("验证cookie是否有效")
     cookie_setup = asyncio.run(cookie_auth(cookies))
+    if not cookie_setup:
+        raise Exception("cookie 失效")
 
     category = TencentZoneTypes.LIFESTYLE.value
     # 获取当前的时间
@@ -343,16 +348,17 @@ def upload_video_to_tencent(
     asyncio.run(app.main(), debug=False)
 
 
-def get_tencent_login_account_ids():
+async def get_tencent_login_account_ids():
     ids = get_all_tencent_login_ids()
     filtered_ids = []
     for id in ids:
         login_info = get_tencent_login(id)
         cookies_json = login_info["client_cookie"]
         cookies = json.loads(cookies_json)
-        vail = cookie_auth(cookies)
+        vail = await cookie_auth(cookies)
         if vail:
             filtered_ids.append(id)
         else:
+            remove_tencent_login(id)
             remove_from_tencent_login_list(id)
     return filtered_ids

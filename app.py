@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
     playwright = await async_playwright().start()
     browser_instances["firefox"] = await playwright.firefox.launch(headless=True)
     browser_instances["chromium"] = await playwright.chromium.launch(headless=True)
+    browser_instances["webkit"] = await playwright.webkit.launch(headless=True)
 
     yield
     await browser_instances["firefox"].close()
@@ -95,7 +96,7 @@ async def xiaohongshu_get_login_account():
 @app.get("/tencent/get_login_qrcode_blob")
 async def tencent_get_login_qrcode_blob(background_tasks: BackgroundTasks):
     login_info = await tencent_login(
-        background_tasks, browser=browser_instances["firefox"]
+        background_tasks, browser=browser_instances["webkit"]
     )
     if login_info.get("error") is not None:
         return {"code": 1, "message": login_info["error"], "data": None}
@@ -108,7 +109,7 @@ async def tencent_get_login_qrcode_blob(background_tasks: BackgroundTasks):
 
 @app.get("/tencent/get_login_account")
 async def tencent_get_login_account():
-    ids = get_tencent_login_account_ids()
+    ids = await get_tencent_login_account_ids()
     response = {"code": 0, "data": ids}
     return response
 
@@ -129,7 +130,7 @@ async def douyin_get_login_qrcode_blob(background_tasks: BackgroundTasks):
 
 @app.get("/douyin/get_login_account")
 async def douyin_get_login_account():
-    ids = get_douyin_login_account_ids()
+    ids = await get_douyin_login_account_ids()
     response = {"code": 0, "data": ids}
     return response
 
@@ -168,7 +169,7 @@ async def ks_get_login_qrcode_blob(background_tasks: BackgroundTasks):
 
 @app.get("/ks/get_login_account")
 async def ks_get_login_account():
-    ids = get_ks_login_account_ids()
+    ids = await get_ks_login_account_ids()
     response = {"code": 0, "data": ids}
     return response
 
