@@ -28,12 +28,13 @@ def run_upload_task(
     timestamp: Optional[str] = None,
 ):
     try:
+        upload_task_dict = {"status": "downloading video"}
+        record_task_result(task_id, json.dumps(upload_task_dict))
         download_file_path = download_file(
             video_url,
             save_folder=f"{current_working_directory}/cache/",
             filename=video_file_name,
         )
-        print(f"下载视频成功，文件路径：{download_file_path}")
         try:
             dict_platforms = platforms.model_dump()
             upload_task_dict = {"status": "uploading"}
