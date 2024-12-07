@@ -30,7 +30,6 @@ async def tencent_login(background_tasks: BackgroundTasks, browser: Browser):
         await page.goto("https://channels.weixin.qq.com")
 
         # 获取登录二维码
-        await page.screenshot(path="example.png")
         qrcode_img = page.locator("iframe").content_frame.locator("img.qrcode")
         src = await qrcode_img.get_attribute("src")
 
@@ -40,6 +39,8 @@ async def tencent_login(background_tasks: BackgroundTasks, browser: Browser):
                     await asyncio.sleep(1)  # 一秒检测一次，最多三分钟
                     # 检查是否成功登录
                     id_span = page.locator("#finder-uid-copy")
+                    if not await id_span.is_visible():
+                        continue
                     account_id = await id_span.text_content()
                     if account_id is not None:
                         cookies = await context.storage_state()  # 获取登录后的cookie

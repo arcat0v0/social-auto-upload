@@ -95,7 +95,7 @@ async def xiaohongshu_get_login_account():
 @app.get("/tencent/get_login_qrcode_blob")
 async def tencent_get_login_qrcode_blob(background_tasks: BackgroundTasks):
     login_info = await tencent_login(
-        background_tasks, browser=browser_instances["chromium"]
+        background_tasks, browser=browser_instances["firefox"]
     )
     if login_info.get("error") is not None:
         return {"code": 1, "message": login_info["error"], "data": None}
