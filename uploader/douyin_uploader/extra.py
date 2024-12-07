@@ -304,7 +304,7 @@ def upload_video_to_douyin(
 ):
     login_info = get_douyin_login(id)
     cookies_json = login_info["client_cookie"]
-    cookies = json.loads(cookies_json)
+    cookies = cookies_json
     cookie_setup = asyncio.run(cookie_auth(cookies))
 
     # 获取当前的时间
