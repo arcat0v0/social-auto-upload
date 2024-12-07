@@ -91,7 +91,13 @@ def upload_video_to_bilibili(
     try:
         tags_list = [tag.replace("#", "") for tag in tags]
         bili_uploader = BilibiliUploader(
-            cookie_data, Path(video_path), title, description, tid, tags_list, timestamp
+            cookie_data,
+            Path(video_path),
+            title,
+            description,
+            tid,
+            tags_list,
+            int(timestamp),
         )
         bili_uploader.upload()
     except Exception as e:
