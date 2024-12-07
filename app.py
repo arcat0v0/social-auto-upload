@@ -177,11 +177,10 @@ async def ks_get_login_account():
 async def change_redis_config_route(
     host: str = Form(...),
     port: int = Form(...),
-    username: str = Form(None),
     password: str = Form(None),
 ):
     try:
-        change_redis_config(host, port)
+        change_redis_config(host, port, password=password)
         response = {"code": 0, "message": "success"}
     except Exception as e:
         response = {"code": 1, "message": str(e)}

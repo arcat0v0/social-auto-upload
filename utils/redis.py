@@ -50,15 +50,12 @@ def test_redis_connecting():
         return f"Failed to connect to redis: {e}"
 
 
-def change_redis_config(
-    host: str, port: int, decode_responses=True, username=None, password=None
-):
+def change_redis_config(host: str, port: int, decode_responses=True, password=None):
     global r
     r = redis.StrictRedis(
         host=host,
         port=port,
         decode_responses=True,
-        username=username,
         password=password,
     )
 
