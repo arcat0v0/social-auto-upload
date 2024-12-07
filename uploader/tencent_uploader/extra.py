@@ -10,6 +10,7 @@ from utils.redis import (
     get_all_tencent_login_ids,
     get_tencent_login,
     register_tencent_login,
+    remove_from_tencent_login_list,
 )
 from playwright.async_api import async_playwright, Playwright
 from utils.log import tencent_logger
@@ -343,4 +344,15 @@ def upload_video_to_tencent(
 
 
 def get_tencent_login_account_ids():
-    return get_all_tencent_login_ids()
+    ids = get_all_tencent_login_ids()
+    filtered_ids = []
+    for id in ids:
+        login_info = get_tencent_login(id)
+        cookies_json = login_info["client_cookie"]
+        cookies = json.loads(cookies_json)
+        vail = cookie_auth(cookies)
+        if vail:
+            filtered_ids.append(id)
+        else:
+            remove_from_tencent_login_list(id)
+    return filtered_ids

@@ -4,7 +4,11 @@ import json
 from xhs import XhsClient
 
 from uploader.xhs_uploader.main import beauty_print, sign_local
-from utils.redis import get_all_xiaohongshu_login_ids, get_xiaohongshu_login
+from utils.redis import (
+    get_all_xiaohongshu_login_ids,
+    get_xiaohongshu_login,
+    remove_from_xiaohongshu_login_list,
+)
 
 
 def upload_video_to_xiaohongshu(
@@ -71,4 +75,22 @@ def upload_video_to_xiaohongshu(
 
 
 def get_xiaohongshu_login_account_ids():
-    return get_all_xiaohongshu_login_ids()
+    ids = get_all_xiaohongshu_login_ids()
+    filtered_ids = []
+    # 测试cookie是否有效
+    for id in ids:
+        login_info = get_xiaohongshu_login(id)
+        cookies_json = login_info["client_cookie"]
+        cookies = json.loads(cookies_json)
+        cookies_string = ";".join(
+            [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
+        )
+        xhs_client = XhsClient(cookies_string, sign=sign_local, timeout=60)
+        # auth cookie
+        # 注意：该校验cookie方式可能并没那么准确
+        try:
+            xhs_client.get_video_first_frame_image_id("3214")
+            filtered_ids.append(id)
+        except Exception as e:
+            remove_from_xiaohongshu_login_list(id)
+    return filtered_ids

@@ -12,7 +12,12 @@ from uploader.ks_uploader.login import convert_storage_state
 from utils.base_social_media import set_init_script
 from utils.files_times import get_absolute_path
 from utils.log import kuaishou_logger
-from utils.redis import get_all_ks_login_ids, get_ks_login, register_ks_login
+from utils.redis import (
+    get_all_ks_login_ids,
+    get_ks_login,
+    register_ks_login,
+    remove_from_ks_login_list,
+)
 
 
 async def cookie_auth(account_file):
@@ -268,4 +273,15 @@ def upload_video_to_ks(
 
 
 def get_ks_login_account_ids():
-    return get_all_ks_login_ids()
+    ids = get_all_ks_login_ids()
+    filtered_ids = []
+    for id in ids:
+        login_info = get_ks_login(id)
+        cookies_json = login_info["client_cookie"]
+        cookies = json.loads(cookies_json)
+        vail = cookie_auth(cookies)
+        if vail:
+            filtered_ids.append(id)
+        else:
+            remove_from_ks_login_list(id)
+    return filtered_ids

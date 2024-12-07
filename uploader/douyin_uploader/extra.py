@@ -13,14 +13,11 @@ import asyncio
 from datetime import datetime, timedelta
 import json
 from typing import List, Optional
-from utils.constant import TencentZoneTypes
 from utils.redis import (
     get_all_douyin_login_ids,
-    get_all_tencent_login_ids,
     get_douyin_login,
-    get_tencent_login,
     register_douyin_login,
-    register_tencent_login,
+    remove_from_douyin_login_list,
 )
 
 
@@ -330,4 +327,15 @@ def upload_video_to_douyin(
 
 
 def get_douyin_login_account_ids():
-    return get_all_douyin_login_ids()
+    ids = get_all_douyin_login_ids()
+    filtered_ids = []
+    for id in ids:
+        login_info = get_douyin_login(id)
+        cookies_json = login_info["client_cookie"]
+        cookies = json.loads(cookies_json)
+        vail = cookie_auth(cookies)
+        if vail:
+            filtered_ids.append(id)
+        else:
+            remove_from_douyin_login_list(id)
+    return filtered_ids
