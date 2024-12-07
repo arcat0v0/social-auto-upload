@@ -98,7 +98,7 @@ class KSVideo(object):
             )
         else:
             browser = await playwright.chromium.launch(
-                headless=True
+                headless=False
             )  # 创建一个浏览器上下文，使用指定的 cookie 文件
         context = await browser.new_context(storage_state=self.account_file)
         context = await set_init_script(context)
@@ -131,6 +131,9 @@ class KSVideo(object):
         new_feature_button = page.locator('button[type="button"] span:text("我知道了")')
         if await new_feature_button.count() > 0:
             await new_feature_button.click()
+
+        # 关闭弹窗
+        await page.get_by_label("Skip").click()
 
         kuaishou_logger.info("正在填充标题和话题...")
         await page.get_by_text("描述").locator("xpath=following-sibling::div").click()
