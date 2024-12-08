@@ -342,7 +342,11 @@ def upload_video_to_tencent(
         title,
         video_path,
         tags,
-        int(timestamp) if timestamp is not None else future_time,
+        (
+            datetime.fromtimestamp(float(timestamp))
+            if timestamp is not None
+            else future_time
+        ),
         cookies,
         category,
     )
