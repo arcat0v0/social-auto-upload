@@ -139,7 +139,7 @@ def run_upload_task(
             print(f"上传视频失败，错误信息：{str(e)}")
             traceback.print_exc()
         finally:
-            # remove_file(download_file_path)
+            remove_file(download_file_path)
             record_task_result(task_id, json.dumps(upload_task_dict))
 
     except Exception as e:

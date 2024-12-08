@@ -22,7 +22,16 @@ from uploader.xhs_uploader.extra import get_xiaohongshu_login_account_ids
 from uploader.xhs_uploader.login import xhs_login_client, xhs_login_creator
 from playwright.async_api import async_playwright, Browser
 
-from utils.redis import change_redis_config, get_task_result, test_redis_connecting
+from utils.redis import (
+    change_redis_config,
+    clear_bilibili_login_list,
+    clear_douyin_login_list,
+    clear_ks_login_list,
+    clear_tencent_login_list,
+    clear_xiaohongshu_login_list,
+    get_task_result,
+    test_redis_connecting,
+)
 
 
 browser_instances = {
@@ -232,6 +241,21 @@ async def get_upload_task_status(task_id: str = Form(...)):
     status = get_task_result(task_id)
     response = {"code": 0, "data": status}
     return response
+
+
+@app.post("/clear_all_login_account")
+async def clear_all_login_account():
+    try:
+        clear_bilibili_login_list()
+        clear_xiaohongshu_login_list()
+        clear_tencent_login_list()
+        clear_douyin_login_list()
+        clear_ks_login_list()
+        response = {"code": 0, "message": "success"}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
 
 
 @app.get("/screenshot")
