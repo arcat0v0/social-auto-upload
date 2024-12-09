@@ -121,6 +121,18 @@ def clear_xiaohongshu_login_list():
     remove_from_login_list("xiaohongshu_login")
 
 
+def add_to_xiaohongshu_sms_list(phone_number):
+    r.sadd("xiaohongshu_sms", phone_number)
+
+
+def remove_from_xiaohongshu_sms_list(phone_number):
+    r.srem("xiaohongshu_sms", phone_number)
+
+
+def get_all_xiaohongshu_sms_numbers():
+    return r.smembers("xiaohongshu_sms")
+
+
 # tencent
 
 

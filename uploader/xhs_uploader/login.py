@@ -1,15 +1,22 @@
 import asyncio
 import json
+import re
 import uuid
 from fastapi import BackgroundTasks
 from playwright.async_api import async_playwright, Browser
 
 import base64
 
+from utils.base_social_media import set_init_script
 from utils.redis import (
     add_to_xiaohongshu_login_list,
+    add_to_xiaohongshu_sms_list,
+    get_all_xiaohongshu_login_ids,
+    get_all_xiaohongshu_sms_numbers,
     get_xiaohongshu_login,
     register_xiaohongshu_login,
+    remove_from_xiaohongshu_sms_list,
+    remove_xiaohongshu_login,
 )
 
 
@@ -192,3 +199,134 @@ async def xhs_login_creator(
             if page:
                 await page.context.clear_cookies()
                 await page.close()
+
+
+def xhs_save_cookie(cookies: str):
+    try:
+        cookies_json = json.loads(cookies)
+        generated_login_uuid = uuid.uuid4()
+        generated_login_uuid_str = str(generated_login_uuid)
+
+        login_info = {
+            "client_cookie": cookies_json,
+        }
+        register_xiaohongshu_login(generated_login_uuid_str, json.dumps(login_info))
+        add_to_xiaohongshu_login_list(generated_login_uuid_str)
+
+        return generated_login_uuid_str
+    except Exception as e:
+        print("An error occurred:", str(e))
+        return None
+
+
+async def xhs_login_by_sms(
+    background_tasks: BackgroundTasks, browser: Browser, phone_number: str
+):
+    # 检测是否该手机号码已经在验证登录
+    numbers = get_all_xiaohongshu_sms_numbers()
+    if phone_number in numbers:
+        raise Exception("该手机号码已经在验证登录")
+
+    generated_login_uuid = uuid.uuid4()
+    generated_login_uuid_str = str(generated_login_uuid)
+    async with async_playwright() as playwright:
+        try:
+            context = await browser.new_context(
+                viewport={"width": 1280, "height": 720}  # 设置视口宽度和高度
+            )
+            context = await set_init_script(context)
+            page = await context.new_page()
+            await page.context.clear_cookies()
+            await page.goto("https://creator.xiaohongshu.com/login")
+            await page.get_by_placeholder("手机号").click()
+            await page.get_by_placeholder("手机号").fill(phone_number)
+            await page.get_by_text("发送验证码").click()
+
+            login_info = {
+                "login_status": "send_sms_verify_code",
+                "phone_number": phone_number,
+            }
+            register_xiaohongshu_login(generated_login_uuid_str, json.dumps(login_info))
+            add_to_xiaohongshu_sms_list(phone_number)
+
+            async def xhs_login_callback():
+                try:
+                    for i in range(0, 180):
+                        await asyncio.sleep(1)
+                        login_status = get_xiaohongshu_login(
+                            generated_login_uuid_str
+                        ).get("login_status")
+                        sms_verify_code = get_xiaohongshu_login(
+                            generated_login_uuid_str
+                        ).get("sms_verify_code")
+                        if (
+                            login_status == "send_sms_verify_code"
+                            and sms_verify_code is not None
+                        ):
+                            # 输入短信验证码
+                            await page.get_by_placeholder("验证码").click()
+                            await page.get_by_placeholder("验证码").fill(
+                                get_xiaohongshu_login(generated_login_uuid_str)[
+                                    "sms_verify_code"
+                                ]
+                            )
+                            await page.get_by_role("button", name="登 录").click()
+                            login_info = {"login_status": "verified_sms_verify_code"}
+                            register_xiaohongshu_login(
+                                generated_login_uuid_str, json.dumps(login_info)
+                            )
+
+                        # 检查是否成功登录
+                        redId = page.get_by_text("小红书账号:")
+                        if await redId.is_visible():
+                            redId_text_element = page.get_by_text("小红书账号:")
+                            redId_text = await redId_text_element.inner_text()
+                            redId = redId_text.split(": ")[
+                                -1
+                            ].strip()  # 提取冒号后面的内容并去除空白字符
+                            if redId is not None:
+                                cookies = (
+                                    await context.storage_state()
+                                )  # 获取登录后的cookie
+                                cookies_json = json.dumps(
+                                    cookies
+                                )  # 将cookie转换为json格式
+
+                                login_info = {
+                                    "red_id": redId,
+                                    "client_cookie": cookies_json,
+                                    "login_status": "success",
+                                }
+                                register_xiaohongshu_login(
+                                    generated_login_uuid_str, json.dumps(login_info)
+                                )
+                                add_to_xiaohongshu_login_list(generated_login_uuid_str)
+                                break
+                        if i == 180:
+                            return
+                except Exception as e:
+                    print(f"Error during login: {e}")
+                finally:
+                    remove_from_xiaohongshu_sms_list(phone_number)
+                    await page.close()
+                    await page.context.clear_cookies()
+                    await context.close()
+
+            background_tasks.add_task(xhs_login_callback)
+
+            return {"id": generated_login_uuid_str}
+        except Exception as e:
+            raise Exception(f"发生验证码失败: {e}")
+
+
+def xhs_login_verify_sms(id: str, code: str):
+    try:
+        login_info = get_xiaohongshu_login(id)
+        if login_info.get("login_status") != "send_sms_verify_code":
+            raise Exception("请先发送验证码")
+        elif login_info is None:
+            raise Exception("登录信息不存在")
+        login_info["sms_verify_code"] = code
+        register_xiaohongshu_login(id, json.dumps(login_info))
+    except Exception as e:
+        raise Exception(f"验证验证码失败: {e}")

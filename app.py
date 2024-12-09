@@ -19,7 +19,13 @@ from uploader.tencent_uploader.extra import get_tencent_login_account_ids
 from uploader.tencent_uploader.login import tencent_login
 from uploader.uploader import run_upload_task
 from uploader.xhs_uploader.extra import get_xiaohongshu_login_account_ids
-from uploader.xhs_uploader.login import xhs_login_client, xhs_login_creator
+from uploader.xhs_uploader.login import (
+    xhs_login_by_sms,
+    xhs_login_client,
+    xhs_login_creator,
+    xhs_login_verify_sms,
+    xhs_save_cookie,
+)
 from playwright.async_api import async_playwright, Browser
 
 from utils.redis import (
@@ -85,6 +91,38 @@ async def xhs_get_login_qrcode_blob(background_tasks: BackgroundTasks):
     return {"code": 0, "data": qrcode_image_src}
 
 
+@app.post("/xhs/login_by_sms")
+async def xhs_login_by_sms_route(
+    background_tasks: BackgroundTasks,
+    phone: str = Form(...),
+):
+    try:
+        res = await xhs_login_by_sms(
+            background_tasks=background_tasks,
+            browser=browser_instances["firefox"],
+            phone_number=phone,
+        )
+        response = {"code": 0, "message": "success", "data": res}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
+
+
+@app.post("/xhs/verify_sms_code")
+async def xhs_verify_sms_code_route(
+    account_id: str = Form(...),
+    code: str = Form(...),
+):
+    try:
+        xhs_login_verify_sms(account_id, code)
+        response = {"code": 0, "message": "success"}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
+
+
 # @app.get("/xhs/get_login_creator_qrcode_blob")
 # async def xhs_get_login_creator_qrcode_blob(background_tasks: BackgroundTasks, id: str = Form(...)):
 #     qrcode_image_src = await xhs_login_creator(background_tasks, browser=browser_instances["firefox"], id=id)
@@ -100,6 +138,19 @@ async def xiaohongshu_get_login_account():
     ids = get_xiaohongshu_login_account_ids()
     response = {"code": 0, "data": ids}
     return response
+
+
+@app.post("/xhs/upload_cookies")
+async def xiaohongshu_upload_cookies(
+    cookies: str = Form(...),
+):
+    try:
+        id = xhs_save_cookie(cookies)
+        response = {"code": 0, "message": "success", "data": {"id": id}}
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+    finally:
+        return response
 
 
 @app.get("/tencent/get_login_qrcode_blob")

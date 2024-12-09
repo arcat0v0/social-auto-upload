@@ -1,7 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
 import json
-from pathlib import Path
 from typing import List, Optional
 from uploader.tencent_uploader.login import convert_storage_state
 from utils.base_social_media import set_init_script
