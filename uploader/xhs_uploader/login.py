@@ -252,7 +252,6 @@ async def xhs_login_by_sms(
                 try:
                     for i in range(0, 180):
                         await asyncio.sleep(1)
-                        print(f"debug: {i}")
                         login_status = get_xiaohongshu_login(
                             generated_login_uuid_str
                         ).get("login_status")
@@ -273,7 +272,7 @@ async def xhs_login_by_sms(
                             await page.locator("form").get_by_role(
                                 "button", name="登录"
                             ).click()
-                            await page.get_by_placeholder("同意并继续").click()
+                            await page.get_by_text("同意并继续").click()
                             login_info = {"login_status": "verified_sms_verify_code"}
                             register_xiaohongshu_login(
                                 generated_login_uuid_str, json.dumps(login_info)
