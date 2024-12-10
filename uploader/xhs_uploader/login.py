@@ -58,6 +58,9 @@ async def xhs_login_client(background_tasks: BackgroundTasks, browser: Browser):
             qr_code_image = page.locator(".qrcode-img")
             qr_code_image_src = await qr_code_image.get_attribute("src")
 
+            login_info = {"login_status": "logging_in"}
+            register_xiaohongshu_login(generated_login_uuid_str, json.dumps(login_info))
+
             async def get_cookie():
                 try:
                     for i in range(0, 180):
@@ -380,7 +383,12 @@ def xhs_login_verify_sms(id: str, code: str):
 
 
 def xhs_login_get_status(account_id: str):
-    login_info = get_xiaohongshu_login(account_id)
-    if login_info is None:
-        return {"error": "Account not found"}
-    return {"login_status": login_info.get("login_status", "unknown")}
+    try:
+        login_info = get_xiaohongshu_login(account_id)
+        if login_info is None:
+            return {"error": "Account not found"}
+        return {"login_status": login_info.get("login_status", "unknown")}
+    except TypeError:
+        raise Exception("无法获取到相关ID登录状态")
+    except Exception as e:
+        raise Exception(f"获取登录状态失败: {e}")
