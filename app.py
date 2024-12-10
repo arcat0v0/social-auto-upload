@@ -23,6 +23,7 @@ from uploader.xhs_uploader.login import (
     xhs_login_by_sms,
     xhs_login_client,
     xhs_login_creator,
+    xhs_login_get_status,
     xhs_login_verify_sms,
     xhs_save_cookie,
 )
@@ -50,9 +51,9 @@ browser_instances = {
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     playwright = await async_playwright().start()
-    browser_instances["firefox"] = await playwright.firefox.launch(headless=True)
-    browser_instances["chromium"] = await playwright.chromium.launch(headless=True)
-    browser_instances["webkit"] = await playwright.webkit.launch(headless=True)
+    browser_instances["firefox"] = await playwright.firefox.launch(headless=False)
+    browser_instances["chromium"] = await playwright.chromium.launch(headless=False)
+    browser_instances["webkit"] = await playwright.webkit.launch(headless=False)
 
     yield
     await browser_instances["firefox"].close()
@@ -100,7 +101,7 @@ async def xhs_login_by_sms_route(
     try:
         res = await xhs_login_by_sms(
             background_tasks=background_tasks,
-            browser=browser_instances["webkit"],
+            browser=browser_instances["firefox"],
             phone_number=phone,
         )
         response = {"code": 0, "message": "success", "data": res}
@@ -152,6 +153,13 @@ async def xiaohongshu_upload_cookies(
         response = {"code": 1, "message": str(e)}
     finally:
         return response
+
+
+@app.get("/xhs/get_login_status")
+async def xhs_get_login_status(account_id: str = Form(...)):
+    res = xhs_login_get_status(account_id)
+    response = {"code": 0, "data": res}
+    return response
 
 
 @app.get("/tencent/get_login_qrcode_blob")

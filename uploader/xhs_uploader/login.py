@@ -66,6 +66,19 @@ async def xhs_login_client(background_tasks: BackgroundTasks, browser: Browser):
                         user_link = page.get_by_role("link", name="我", exact=True)
                         if await user_link.is_visible():
                             break
+                        try:
+                            selector = "div.red-captcha-container"
+                            await page.wait_for_selector(
+                                selector=selector,
+                                timeout=1000,
+                            )
+                            login_info = {"login_status": "captcha_required"}
+                            register_xiaohongshu_login(
+                                generated_login_uuid_str, json.dumps(login_info)
+                            )
+                            return
+                        except:
+                            pass
                         if i == 180:
                             raise Exception("Login timeout")
 
@@ -273,6 +286,19 @@ async def xhs_login_by_sms(
                                 "button", name="登录"
                             ).click()
                             await page.get_by_text("同意并继续").click()
+                            try:
+                                selector = "div.red-captcha-container"
+                                await page.wait_for_selector(
+                                    selector=selector,
+                                    timeout=1000,
+                                )
+                                login_info = {"login_status": "captcha_required"}
+                                register_xiaohongshu_login(
+                                    generated_login_uuid_str, json.dumps(login_info)
+                                )
+                                return
+                            except:
+                                pass
                             login_info = {"login_status": "verified_sms_verify_code"}
                             register_xiaohongshu_login(
                                 generated_login_uuid_str, json.dumps(login_info)
@@ -338,3 +364,10 @@ def xhs_login_verify_sms(id: str, code: str):
         register_xiaohongshu_login(id, json.dumps(login_info))
     except Exception as e:
         raise Exception(f"验证验证码失败: {e}")
+
+
+def xhs_login_get_status(account_id: str):
+    login_info = get_xiaohongshu_login(account_id)
+    if login_info is None:
+        return {"error": "Account not found"}
+    return {"login_status": login_info.get("login_status", "unknown")}
