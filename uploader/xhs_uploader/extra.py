@@ -58,9 +58,7 @@ def upload_video_to_xiaohongshu(
     future_time = now + four_hours
 
     upload_timestamp = (
-        datetime.fromtimestamp(float(timestamp))
-        if timestamp is not None
-        else future_time
+        datetime.fromtimestamp(int(timestamp)) if timestamp is not None else future_time
     )
 
     note = xhs_client.create_video_note(

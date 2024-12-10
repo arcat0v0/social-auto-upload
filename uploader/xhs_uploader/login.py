@@ -88,7 +88,6 @@ async def xhs_login_client(background_tasks: BackgroundTasks, browser: Browser):
                         await asyncio.sleep(10)
                         cookies = await context.cookies()
                         cookies_json = json.dumps(cookies)
-                        await asyncio.sleep(10)
 
                         login_info = {"redId": redId, "client_cookie": cookies_json}
                         register_xiaohongshu_login(
@@ -237,10 +236,10 @@ async def xhs_login_by_sms(
             context = await set_init_script(context)
             page = await context.new_page()
             await page.context.clear_cookies()
-            await page.goto("https://creator.xiaohongshu.com/login")
-            await page.get_by_placeholder("手机号").click()
-            await page.get_by_placeholder("手机号").fill(phone_number)
-            await page.get_by_text("发送验证码").click()
+            await page.goto("https://www.xiaohongshu.com/explore")
+            await page.get_by_placeholder("输入手机号").click()
+            await page.get_by_placeholder("输入手机号").fill(phone_number)
+            await page.get_by_text("获取验证码").click()
 
             login_info = {
                 "login_status": "send_sms_verify_code",
@@ -253,6 +252,7 @@ async def xhs_login_by_sms(
                 try:
                     for i in range(0, 180):
                         await asyncio.sleep(1)
+                        print(f"debug: {i}")
                         login_status = get_xiaohongshu_login(
                             generated_login_uuid_str
                         ).get("login_status")
@@ -264,44 +264,53 @@ async def xhs_login_by_sms(
                             and sms_verify_code is not None
                         ):
                             # 输入短信验证码
-                            await page.get_by_placeholder("验证码").click()
-                            await page.get_by_placeholder("验证码").fill(
+                            await page.get_by_placeholder("输入验证码").click()
+                            await page.get_by_placeholder("输入验证码").fill(
                                 get_xiaohongshu_login(generated_login_uuid_str)[
                                     "sms_verify_code"
                                 ]
                             )
-                            await page.get_by_role("button", name="登 录").click()
+                            await page.locator("form").get_by_role(
+                                "button", name="登录"
+                            ).click()
+                            await page.get_by_placeholder("同意并继续").click()
                             login_info = {"login_status": "verified_sms_verify_code"}
                             register_xiaohongshu_login(
                                 generated_login_uuid_str, json.dumps(login_info)
                             )
 
                         # 检查是否成功登录
-                        redId = page.get_by_text("小红书账号:")
-                        if await redId.is_visible():
-                            redId_text_element = page.get_by_text("小红书账号:")
-                            redId_text = await redId_text_element.inner_text()
-                            redId = redId_text.split(": ")[
-                                -1
-                            ].strip()  # 提取冒号后面的内容并去除空白字符
-                            if redId is not None:
-                                cookies = (
-                                    await context.storage_state()
-                                )  # 获取登录后的cookie
-                                cookies_json = json.dumps(
-                                    cookies
-                                )  # 将cookie转换为json格式
+                        if login_status == "verified_sms_verify_code":
+                            account_page_path = await page.get_attribute(
+                                "li.user div.link-wrapper a.link-wrapper", "href"
+                            )
+                            parts = account_page_path.split("/")
+                            user_id = parts[-1]  # 获取最后一个部分
+                            if user_id is not None and user_id != "":
+                                await page.get_by_role(
+                                    "link", name="我", exact=True
+                                ).click()
+                                await asyncio.sleep(5)  # 等待页面加载
+                                redId_text = await page.inner_text("span.user-redId")
+                                redId = redId_text.split("：")[
+                                    -1
+                                ].strip()  # 提取冒号后面的内容并去除空白字符
+
+                                # 跳转创作者页面
+                                await page.get_by_role("link", name="发布").click()
+                                await asyncio.sleep(10)
+                                cookies = await context.cookies()
+                                cookies_json = json.dumps(cookies)
 
                                 login_info = {
-                                    "red_id": redId,
+                                    "redId": redId,
                                     "client_cookie": cookies_json,
-                                    "login_status": "success",
                                 }
                                 register_xiaohongshu_login(
                                     generated_login_uuid_str, json.dumps(login_info)
                                 )
                                 add_to_xiaohongshu_login_list(generated_login_uuid_str)
-                                break
+                                return
                         if i == 180:
                             return
                 except Exception as e:
