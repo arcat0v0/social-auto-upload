@@ -253,6 +253,17 @@ async def xhs_login_by_sms(
             await page.get_by_placeholder("输入手机号").click()
             await page.get_by_placeholder("输入手机号").fill(phone_number)
             await page.get_by_text("获取验证码").click()
+            try:
+                selector = "div.reds-toast.center"
+                await page.wait_for_selector(
+                    selector=selector,
+                    timeout=5000,
+                )
+                element = await page.query_selector(selector)
+                text = await element.inner_text()
+                return {"error": text}
+            except:
+                pass
 
             login_info = {
                 "login_status": "send_sms_verify_code",
