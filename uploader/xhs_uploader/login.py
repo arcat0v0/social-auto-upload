@@ -261,6 +261,8 @@ async def xhs_login_by_sms(
                 )
                 element = await page.query_selector(selector)
                 text = await element.inner_text()
+                if text == "证码已发送":
+                    raise Exception("验证码已发送")
                 return {"error": text}
             except:
                 pass
