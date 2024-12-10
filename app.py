@@ -43,6 +43,7 @@ from utils.redis import (
 browser_instances = {
     "firefox": Browser,
     "chromium": Browser,
+    "webkit": Browser,
 }  # 用于存储浏览器实例的全局变量
 
 
@@ -99,7 +100,7 @@ async def xhs_login_by_sms_route(
     try:
         res = await xhs_login_by_sms(
             background_tasks=background_tasks,
-            browser=browser_instances["firefox"],
+            browser=browser_instances["webkit"],
             phone_number=phone,
         )
         response = {"code": 0, "message": "success", "data": res}
