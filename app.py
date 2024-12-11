@@ -157,9 +157,13 @@ async def xiaohongshu_upload_cookies(
 
 @app.get("/xhs/get_login_status")
 async def xhs_get_login_status(account_id: str = Form(...)):
-    res = xhs_login_get_status(account_id)
-    response = {"code": 0, "data": res}
-    return response
+    try:
+        res = xhs_login_get_status(account_id)
+        response = {"code": 0, "data": res}
+        return response
+    except Exception as e:
+        response = {"code": 1, "message": str(e)}
+        return response
 
 
 @app.get("/tencent/get_login_qrcode_blob")
