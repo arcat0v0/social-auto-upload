@@ -218,12 +218,11 @@ async def xhs_login_creator(
 
 def xhs_save_cookie(cookies: str):
     try:
-        cookies_json = json.loads(cookies)
         generated_login_uuid = uuid.uuid4()
         generated_login_uuid_str = str(generated_login_uuid)
 
         login_info = {
-            "client_cookie": cookies_json,
+            "str_cookies": cookies,
         }
         register_xiaohongshu_login(generated_login_uuid_str, json.dumps(login_info))
         add_to_xiaohongshu_login_list(generated_login_uuid_str)

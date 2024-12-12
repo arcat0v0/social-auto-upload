@@ -16,11 +16,16 @@ def upload_video_to_xiaohongshu(
     id: str, video_path: str, title: str, tags: List[str], timestamp: Optional[str]
 ):
     login_info = get_xiaohongshu_login(id)
-    cookies_json = login_info["client_cookie"]
-    cookies = json.loads(cookies_json)
-    cookies_string = ";".join(
-        [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
-    )
+    if login_info.get("str_cookies") is not None:
+        cookies_string = login_info["str_cookies"]
+    elif login_info.get("client_cookie") is not None:
+        cookies_json = login_info["client_cookie"]
+        cookies = json.loads(cookies_json)
+        cookies_string = ";".join(
+            [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
+        )
+    else:
+        raise Exception("cookie 不存在")
 
     xhs_client = XhsClient(cookies_string, sign=sign_local, timeout=60)
     # auth cookie
@@ -79,11 +84,16 @@ def get_xiaohongshu_login_account_ids():
     # 测试cookie是否有效
     for id in ids:
         login_info = get_xiaohongshu_login(id)
-        cookies_json = login_info["client_cookie"]
-        cookies = json.loads(cookies_json)
-        cookies_string = ";".join(
-            [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
-        )
+        if login_info.get("str_cookies") is not None:
+            cookies_string = login_info["str_cookies"]
+        elif login_info.get("client_cookie") is not None:
+            cookies_json = login_info["client_cookie"]
+            cookies = json.loads(cookies_json)
+            cookies_string = ";".join(
+                [f"{cookie['name']}={cookie['value']}" for cookie in cookies]
+            )
+        else:
+            raise Exception("cookie 不存在")
         xhs_client = XhsClient(cookies_string, sign=sign_local, timeout=60)
         # auth cookie
         # 注意：该校验cookie方式可能并没那么准确
